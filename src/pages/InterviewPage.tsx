@@ -5,6 +5,28 @@ import { useInterviewStore } from '@/store/interviewStore'
 import ReportModal from '@/components/ReportModal'
 import styles from './InterviewPage.module.scss'
 
+// Formats a timestamp for chat bubbles:
+// - same day  → "14:05"
+// - yesterday / earlier this year → "3月2日 14:05"
+// - last year or earlier → "2025年3月2日 14:05"
+function formatBubbleTime(iso: string): string {
+  const d = new Date(iso)
+  const now = new Date()
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const yesterdayStart = new Date(todayStart.getTime() - 86400_000)
+  const thisYearStart = new Date(now.getFullYear(), 0, 1)
+
+  const hm = d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })
+  if (d >= todayStart) return hm
+  if (d >= yesterdayStart) {
+    return `${d.getMonth() + 1}月${d.getDate()}日 ${hm}`
+  }
+  if (d >= thisYearStart) {
+    return `${d.getMonth() + 1}月${d.getDate()}日 ${hm}`
+  }
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${hm}`
+}
+
 // Parse evaluation_detail which may be a plain string or JSON {score, details}
 function parseEval(raw: string | undefined): { score: number | null; detail: string } {
   if (!raw) return { score: null, detail: '' }
@@ -141,10 +163,13 @@ export default function InterviewPage() {
   }
   const bannerMessage = bannerMessageMap[current.status] ?? '面试已结束'
 
-  // Build display labels: main questions get Q1, Q2…; followups get Q1 追问, Q1 追问2…
+  // Build display labels: main questions get Q1, Q2…; sub rounds Q1 反问; followups Q1 追问…
   let mainCount = 0
   let followupCount = 0
   const roundLabels = rounds.map(r => {
+    if (r.is_sub) {
+      return `Q${mainCount} 反问`  // same mainCount, don't increment
+    }
     if (!r.is_followup) {
       mainCount++
       followupCount = 0
@@ -154,6 +179,10 @@ export default function InterviewPage() {
       return `Q${mainCount} 追问${followupCount > 1 ? followupCount : ''}`
     }
   })
+  const labelMap = new Map(rounds.map((r, i) => [r.id, roundLabels[i]]))
+
+  // Round nums that have a subsequent sub round — those answers were candidate sub-questions
+  const subNums = new Set(rounds.filter(r => r.is_sub).map(r => r.round_num))
 
   return (
     <div className={styles.page}>
@@ -197,11 +226,16 @@ export default function InterviewPage() {
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>轮次</span>
             <span className={styles.metaValue}>
-              {rounds.filter(r => !r.is_followup && r.answer).length}
+              {rounds.filter(r => !r.is_followup && !r.is_sub && r.answer).length}
               {' '}/ {current.max_rounds}
               {rounds.some(r => r.is_followup) && (
                 <span className={styles.followupBadge}>
                   +{rounds.filter(r => r.is_followup).length}追问
+                </span>
+              )}
+              {rounds.some(r => r.is_sub) && (
+                <span className={styles.subBadge}>
+                  +{rounds.filter(r => r.is_sub).length}反问
                 </span>
               )}
             </span>
@@ -220,9 +254,9 @@ export default function InterviewPage() {
         {rounds.length > 0 && (
           <div className={styles.roundList}>
             <p className={styles.roundListTitle}>历史问题</p>
-            {rounds.map((r, i) => (
+            {rounds.filter(r => !r.is_sub).map((r) => (
               <div key={r.id} className={styles.roundItem + (r.is_followup ? ' ' + styles.roundItemFollowup : '')}>
-                <span className={styles.roundNum}>{roundLabels[i]}</span>
+                <span className={styles.roundNum}>{labelMap.get(r.id)}</span>
                 {isFinished && r.score !== undefined && r.score !== null && (
                   <span className={styles.score}>{r.score}</span>
                 )}
@@ -238,15 +272,21 @@ export default function InterviewPage() {
         <div className={styles.chatArea}>
           {rounds.map((r, i) => (
             <div key={r.id} className={styles.roundWrapper}>
-              <div className={styles.bubble + ' ' + (r.is_followup ? styles.aiFollowup : styles.ai)}>
+              <div className={styles.bubble + ' ' + (r.is_sub ? styles.aiSub : r.is_followup ? styles.aiFollowup : styles.ai)}>
                 <span className={styles.bubbleLabel}>面试官 {roundLabels[i]}</span>
                 <div className={styles.md}><ReactMarkdown>{r.question}</ReactMarkdown></div>
+                <span className={styles.bubbleTime}>{formatBubbleTime(r.created_at)}</span>
               </div>
               {r.answer && (
                 <div className={styles.bubble + ' ' + styles.user}>
-                  <span className={styles.bubbleLabel}>你</span>
+                  <span className={styles.bubbleLabel}>
+                    {!r.is_sub && !r.is_followup && subNums.has(r.round_num)
+                      ? '你（反问）'
+                      : '你'}
+                  </span>
                   <div className={styles.md}><ReactMarkdown>{r.answer}</ReactMarkdown></div>
-                  {isFinished && <EvalBlock score={r.score} detail={r.evaluation_detail} />}
+                  {isFinished && !(!r.is_sub && !r.is_followup && subNums.has(r.round_num)) && <EvalBlock score={r.score} detail={r.evaluation_detail} />}
+                  {r.answered_at && <span className={styles.bubbleTime}>{formatBubbleTime(r.answered_at)}</span>}
                 </div>
               )}
             </div>

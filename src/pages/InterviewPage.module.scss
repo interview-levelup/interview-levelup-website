@@ -123,6 +123,13 @@
   opacity: 0.85;
 }
 
+.subBadge {
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
+  color: #818cf8;
+  opacity: 0.85;
+}
+
 .reportBtn {
   @include btn;
   font-size: 0.85rem;
@@ -189,6 +196,17 @@
     }
   }
 
+  &.aiSub {
+    background: rgba(99, 102, 241, 0.06);   // indigo tint
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    align-self: flex-start;
+    margin-left: 2rem;
+
+    .bubbleLabel {
+      color: #818cf8;
+    }
+  }
+
   &.user {
     background: rgba($primary, 0.1);
     border: 1px solid rgba($primary, 0.25);
@@ -202,6 +220,15 @@
   color: $text-muted;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.bubbleTime {
+  align-self: flex-end;
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: $text-muted;
+  opacity: 0.55;
+  margin-top: 0.1rem;
 }
 
 .evalBlock {

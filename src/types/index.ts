@@ -26,7 +26,9 @@ export interface InterviewRound {
   score?: number
   evaluation_detail?: string
   is_followup: boolean
+  is_sub: boolean
   created_at: string
+  answered_at?: string
 }
 
 export interface StartInterviewPayload {
