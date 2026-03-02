@@ -1,0 +1,96 @@
+@use '@/styles/variables' as *;
+@use '@/styles/mixins' as *;
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+}
+
+.subtitle {
+  color: $text-muted;
+  font-size: 0.875rem;
+  margin-top: 0.2rem;
+}
+
+.newBtn {
+  @include btn;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 4rem 0;
+  color: $text-muted;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem 1.5rem;
+  text-decoration: none;
+  color: $text;
+  transition: border-color 0.2s, transform 0.15s;
+
+  &:hover {
+    border-color: $primary;
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.role {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+
+  &.ongoing  { background: rgba($warning, 0.15); color: $warning; }
+  &.finished { background: rgba($success, 0.15); color: $success; }
+}
+
+.cardMeta {
+  display: flex;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: $text-muted;
+}
+
+.cardDate {
+  font-size: 0.75rem;
+  color: $text-muted;
+  margin-top: 0.25rem;
+}

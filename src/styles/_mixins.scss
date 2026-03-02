@@ -1,0 +1,42 @@
+@use 'sass:color';
+@use 'variables' as *;
+
+@mixin card {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  padding: 2rem;
+}
+
+@mixin btn($bg: $primary, $color: #fff) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  background: $bg;
+  color: $color;
+  border: none;
+  border-radius: $radius;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  &:hover { background: color.adjust($bg, $lightness: -6%); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+@mixin input {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: $bg-input;
+  color: $text;
+  border: 1px solid $border;
+  border-radius: $radius;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  &:focus { border-color: $primary; }
+  &::placeholder { color: $text-muted; }
+}

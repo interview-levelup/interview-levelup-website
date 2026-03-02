@@ -1,0 +1,30 @@
+@use 'variables' as *;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: $font-sans;
+  background: $bg;
+  color: $text;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+a { color: $primary; text-decoration: none; &:hover { text-decoration: underline; } }
+
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid $border;
+  border-top-color: $primary;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 2rem auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-msg {
+  color: $danger;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
