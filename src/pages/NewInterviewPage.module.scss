@@ -12,7 +12,7 @@
 .card {
   @include card;
   width: 100%;
-  max-width: 600px;
+  max-width: 640px;
 }
 
 .title {
@@ -30,36 +30,157 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 100px;
-  gap: 1rem;
-}
-
-.field {
+// ── Section ──────────────────────────────────────────────────────────────────
+.section {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.6rem;
+}
 
-  label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: $text-muted;
-  }
+.sectionLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 
-  input, select {
-    @include input;
-  }
+// ── Role input ───────────────────────────────────────────────────────────────
+.roleInput {
+  @include input;
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
+}
 
-  select {
-    appearance: none;
-    cursor: pointer;
+// ── Tag grid (role presets) ───────────────────────────────────────────────────
+.tagGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tagRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tagRowWrap {
+  flex-wrap: wrap;
+}
+
+// Base tag
+.tag {
+  background: $bg-input;
+  border: 1px solid $border;
+  color: $text-muted;
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+
+  &:hover:not(.tagActive) {
+    border-color: rgba($primary, 0.5);
+    color: $text;
   }
 }
 
+.tagActive {
+  background: rgba($primary, 0.15);
+  border-color: $primary;
+  color: $primary;
+  font-weight: 600;
+}
+
+// Level tag (wider, with sub-desc)
+.levelTag {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  background: $bg-input;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  &:hover:not(.tagActive) {
+    border-color: rgba($primary, 0.5);
+  }
+
+  &.tagActive {
+    background: rgba($primary, 0.15);
+    border-color: $primary;
+
+    .levelLabel { color: $primary; }
+    .levelDesc  { color: rgba($primary, 0.7); }
+  }
+}
+
+.levelLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text;
+}
+
+.levelDesc {
+  font-size: 0.72rem;
+  color: $text-muted;
+}
+
+// ── Stepper ───────────────────────────────────────────────────────────────────
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stepBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid $border;
+  background: $bg-input;
+  color: $text;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background: rgba($primary, 0.15);
+    border-color: $primary;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.stepVal {
+  font-size: 1.5rem;
+  font-weight: 700;
+  min-width: 2ch;
+  text-align: center;
+  color: $primary;
+}
+
+.stepHint {
+  font-size: 0.8rem;
+  color: $text-muted;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
 .actions {
   display: flex;
   gap: 1rem;
@@ -72,4 +193,9 @@
 
 .submitBtn {
   @include btn;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
 }

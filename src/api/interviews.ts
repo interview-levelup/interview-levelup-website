@@ -19,6 +19,10 @@ export const submitAnswer = (id: string, answer: string) =>
   client.post<{
     interview: Interview
     finished: boolean
+    answered_round: InterviewRound
     next_question?: InterviewRound
     final_report?: string
   }>(`/api/v1/interviews/${id}/answer`, { answer })
+
+export const endInterview = (id: string) =>
+  client.post<{ interview: Interview }>(`/api/v1/interviews/${id}/end`)

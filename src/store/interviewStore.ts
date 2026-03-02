@@ -13,6 +13,7 @@ interface InterviewState {
   startInterview: (payload: StartInterviewPayload) => Promise<Interview>
   fetchInterview: (id: string) => Promise<void>
   submitAnswer: (id: string, answer: string) => Promise<{ finished: boolean }>
+  endInterview: (id: string) => Promise<void>
   reset: () => void
 }
 
@@ -66,15 +67,34 @@ export const useInterviewStore = create<InterviewState>()((set) => ({
     set({ loading: true, error: null })
     try {
       const { data } = await api.submitAnswer(id, answer)
-      set((state) => ({
-        current: data.interview,
-        rounds: data.finished
-          ? state.rounds
-          : data.next_question
-            ? [...state.rounds, data.next_question]
-            : state.rounds,
-      }))
+      set((state) => {
+        // Patch the last round with the answer + eval returned by the backend
+        const updatedRounds = state.rounds.map((r) =>
+          r.id === data.answered_round?.id ? { ...r, ...data.answered_round } : r
+        )
+        return {
+          current: data.interview,
+          rounds: data.finished
+            ? updatedRounds
+            : data.next_question
+              ? [...updatedRounds, data.next_question]
+              : updatedRounds,
+        }
+      })
       return { finished: data.finished }
+    } catch (e: unknown) {
+      set({ error: (e as Error).message })
+      throw e
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  endInterview: async (id) => {
+    set({ loading: true, error: null })
+    try {
+      const { data } = await api.endInterview(id)
+      set({ current: data.interview })
     } catch (e: unknown) {
       set({ error: (e as Error).message })
       throw e

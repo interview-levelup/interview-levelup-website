@@ -5,7 +5,11 @@
 
 body {
   font-family: $font-sans;
-  background: $bg;
+  background:
+    radial-gradient(ellipse 75% 45% at 15% 0%,   rgba(108, 99, 255, 0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 35% at 85% 100%, rgba(108, 99, 255, 0.06) 0%, transparent 60%),
+    $bg;
+  background-attachment: fixed;
   color: $text;
   min-height: 100vh;
   line-height: 1.6;

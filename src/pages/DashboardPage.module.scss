@@ -80,6 +80,8 @@
 
   &.ongoing  { background: rgba($warning, 0.15); color: $warning; }
   &.finished { background: rgba($success, 0.15); color: $success; }
+  &.aborted  { background: rgba($danger,  0.12); color: $danger; }
+  &.ended    { background: rgba($text-muted, 0.12); color: $text-muted; }
 }
 
 .cardMeta {

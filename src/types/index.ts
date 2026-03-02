@@ -7,12 +7,11 @@ export interface User {
 export interface Interview {
   id: string
   user_id: string
-  thread_id: string
   role: string
   level: string
   style: string
   max_rounds: number
-  status: 'ongoing' | 'finished'
+  status: 'ongoing' | 'finished' | 'aborted' | 'ended'
   final_report?: string
   created_at: string
   updated_at: string

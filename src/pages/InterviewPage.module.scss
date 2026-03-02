@@ -8,9 +8,15 @@
 }
 
 // ── Sidebar ──────────────────────────────────────────────────────────────────
-.sidebar {
+.sidebarWrap {
+  position: relative;
   width: 240px;
   flex-shrink: 0;
+}
+
+.sidebar {
+  width: 100%;
+  height: 100%;
   background: $bg-card;
   border-right: 1px solid $border;
   padding: 1.25rem 1rem;
@@ -18,37 +24,97 @@
   flex-direction: column;
   gap: 1.5rem;
   overflow-y: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.sidebarFade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 1px; // account for border-right
+  height: 64px;
+  background: linear-gradient(to bottom, transparent, $bg-card);
+  pointer-events: none;
+
+  &::after {
+    content: '▾';
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.25rem;
+    color: $text-muted;
+    opacity: 0.7;
+    animation: bounce 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(3px); }
 }
 
 .backBtn {
-  @include btn($bg-input, $text-muted);
-  font-size: 0.85rem;
-  padding: 0.4rem 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  padding: 0.3rem 0;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: $text-muted;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: color 0.15s;
   align-self: flex-start;
+
+  &:hover {
+    color: $text;
+  }
 }
 
 .meta {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0;
+  border: 1px solid rgba($border, 0.6);
+  border-radius: $radius;
+  overflow: hidden;
+  padding: 0 0.75rem;
 }
 
 .metaItem {
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.85rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba($border, 0.5);
+
+  &:last-child { border-bottom: none; }
 }
 
 .metaLabel {
   font-size: 0.75rem;
   color: $text-muted;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
 }
 
-.ongoing { color: $warning; font-weight: 600; }
-.done    { color: $success; font-weight: 600; }
+.metaValue {
+  text-align: right;
+  color: $text;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.ongoing  { color: $warning;    font-weight: 600; }
+.done     { color: $success;    font-weight: 600; }
+.aborted  { color: $danger;     font-weight: 600; }
+.ended    { color: $text-muted; font-weight: 600; }
 
 .followupBadge {
   margin-left: 0.4rem;
@@ -88,6 +154,9 @@
 .chatArea {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -278,7 +347,13 @@
 .inputActions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.inputRight {
+  display: flex;
+  align-items: center;
   gap: 1rem;
 
   button {
@@ -289,4 +364,82 @@
 .hint {
   font-size: 0.75rem;
   color: $text-muted;
+}
+
+// .endRow removed — button moved into inputActions
+
+.endBtn {
+  @include btn;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #ef4444;
+  font-size: 0.8rem;
+  padding: 0.35rem 1rem;
+
+  &:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ── End-interview confirm modal ───────────────────────────────────────────────
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+
+.confirmBox {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  padding: 2rem;
+  width: 360px;
+  max-width: calc(100vw - 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.confirmTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: $text;
+}
+
+.confirmDesc {
+  font-size: 0.875rem;
+  color: $text-muted;
+  line-height: 1.6;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.confirmCancel {
+  @include btn($bg-input, $text-muted);
+  font-size: 0.875rem;
+}
+
+.confirmOk {
+  @include btn;
+  background: #ef4444;
+  font-size: 0.875rem;
+
+  &:hover:not(:disabled) { background: #dc2626; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }

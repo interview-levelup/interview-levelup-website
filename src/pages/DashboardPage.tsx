@@ -10,8 +10,10 @@ const levelLabel: Record<string, string> = {
 }
 
 const statusLabel: Record<string, string> = {
-  ongoing: '进行中',
+  ongoing:  '进行中',
   finished: '已完成',
+  aborted:  '已中止',
+  ended:    '已结束',
 }
 
 export default function DashboardPage() {
@@ -48,8 +50,8 @@ export default function DashboardPage() {
           <Link to={`/interviews/${iv.id}`} key={iv.id} className={styles.card}>
             <div className={styles.cardTop}>
               <span className={styles.role}>{iv.role}</span>
-              <span className={`${styles.badge} ${styles[iv.status]}`}>
-                {statusLabel[iv.status]}
+              <span className={`${styles.badge} ${styles[iv.status] ?? ''}`}>
+                {statusLabel[iv.status] ?? iv.status}
               </span>
             </div>
             <div className={styles.cardMeta}>

@@ -7,8 +7,10 @@
   justify-content: space-between;
   padding: 0 2rem;
   height: 60px;
-  background: $bg-card;
-  border-bottom: 1px solid $border;
+  background: rgba($bg, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba($border, 0.5);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -22,7 +24,7 @@
 }
 
 .logo {
-  height: 42px;
+  height: 52px;
   width: auto;
   object-fit: contain;
   display: block;
@@ -34,13 +36,83 @@
   gap: 1rem;
 }
 
-.email {
-  font-size: 0.875rem;
+.userMenu {
+  position: relative;
+}
+
+.emailBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
   color: $text-muted;
+  font-size: 0.875rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: $radius;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: $bg-input;
+    color: $text;
+  }
+}
+
+.caret {
+  font-size: 0.7rem;
+  transition: transform 0.15s;
+  display: inline-block;
+}
+
+.caretOpen {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 140px;
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  z-index: 200;
+}
+
+.dropdownItem {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  color: $text;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  transition: background 0.12s;
+
+  &:hover {
+    background: $bg-input;
+  }
+
+  & + & {
+    border-top: 1px solid $border;
+  }
 }
 
 .logoutBtn {
   @include btn($bg-input, $text);
   font-size: 0.85rem;
   padding: 0.4rem 1rem;
+}
+
+.changePwdBtn {
+  @include btn($bg-input, $text);
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+  text-decoration: none;
 }
