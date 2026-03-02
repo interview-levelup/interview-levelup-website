@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import styles from './ReportModal.module.scss'
 
 interface Props {
@@ -31,7 +32,7 @@ export default function ReportModal({ report, role, onClose }: Props) {
           </div>
         </div>
         <div className={styles.body}>
-          <ReactMarkdown>{report}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{report}</ReactMarkdown>
         </div>
       </div>
     </div>

@@ -111,10 +111,10 @@
   word-break: break-all;
 }
 
-.ongoing  { color: $warning;    font-weight: 600; }
-.done     { color: $success;    font-weight: 600; }
+.ongoing  { color: $success;    font-weight: 600; }
+.done     { color: $text-muted; font-weight: 600; }
 .aborted  { color: $danger;     font-weight: 600; }
-.ended    { color: $text-muted; font-weight: 600; }
+.ended    { color: $warning;    font-weight: 600; }
 
 .followupBadge {
   margin-left: 0.4rem;

@@ -115,4 +115,29 @@
     border-top: 1px solid $border;
     margin: 1rem 0;
   }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0;
+    font-size: 0.9rem;
+
+    th, td {
+      padding: 0.5rem 0.85rem;
+      border: 1px solid $border;
+      text-align: left;
+      color: $text;
+      line-height: 1.5;
+    }
+
+    th {
+      background: rgba($primary, 0.08);
+      font-weight: 600;
+      color: $text;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+  }
 }
