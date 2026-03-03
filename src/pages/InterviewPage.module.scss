@@ -394,12 +394,18 @@
 }
 
 .sttError {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: $danger;
-  padding: 0.3rem 0.5rem;
+  padding: 0.2rem 0.6rem;
   background: rgba($danger, 0.08);
+  border: 1px solid rgba($danger, 0.25);
   border-radius: $radius;
-  margin: 0 0 0.25rem;
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
 }
 
 // .endRow removed — button moved into inputActions
@@ -565,9 +571,16 @@
 }
 
 .voiceRight {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: flex-end;
+  padding-left: 0.75rem;
+}
+
+.hidden {
+  display: none;
 }
 
 // TTS mute toggle + any small icon button in voice bar

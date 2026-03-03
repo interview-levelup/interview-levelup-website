@@ -95,6 +95,7 @@ export default function InterviewPage() {
   const [showReport, setShowReport] = useState(false)
   const [sttMode, setSttMode] = useState<SttMode>('webspeech')
   const [autoTTS, setAutoTTS] = useState(true)
+  const [sttError, setSttError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const sidebarRef = useRef<HTMLDivElement>(null)
   const [canScrollDown, setCanScrollDown] = useState(false)
@@ -106,8 +107,8 @@ export default function InterviewPage() {
   const { speak, enqueue, stop: stopTTS, speaking, voicesReady } = useTTS()
   const { listening, startListening, stopListening } = useSTT(
     sttMode,
-    (text) => setAnswer((prev) => prev + text),
-    (msg) => console.warn('[STT]', msg),
+    (text) => { setSttError(null); setAnswer((prev) => prev + text) },
+    (msg) => { console.warn('[STT]', msg); setSttError(msg) },
   )
 
   const checkSidebarScroll = useCallback(() => {
@@ -460,7 +461,7 @@ export default function InterviewPage() {
                     className={`${styles.micBtn} ${listening ? styles.listening : ''}`}
                     onMouseDown={() => { if (sttMode === 'webspeech' && !listening) startListening() }}
                     onMouseUp={() => { if (sttMode === 'webspeech' && listening) stopListening() }}
-                    onClick={() => { if (sttMode === 'whisper') { if (listening) stopListening(); else startListening() } }}
+                    onClick={() => { if (sttMode === 'whisper') { if (listening) stopListening(); else { setSttError(null); startListening() } } }}
                     disabled={isStreaming}
                     title={sttMode === 'webspeech' ? '按住说话 (Web Speech)' : listening ? '点击停止录音' : '点击开始录音 (Whisper)'}
                   >
@@ -472,20 +473,23 @@ export default function InterviewPage() {
                     <button
                       type="button"
                       className={`${styles.sttOption} ${sttMode === 'webspeech' ? styles.sttActive : ''}`}
-                      onClick={() => !listening && setSttMode('webspeech')}
+                      onClick={() => { if (!listening) { setSttMode('webspeech'); setSttError(null) } }}
                       disabled={listening}
                     >Web Speech</button>
                     <button
                       type="button"
                       className={`${styles.sttOption} ${sttMode === 'whisper' ? styles.sttActive : ''}`}
-                      onClick={() => !listening && setSttMode('whisper')}
+                      onClick={() => { if (!listening) { setSttMode('whisper'); setSttError(null) } }}
                       disabled={listening}
                     >Whisper</button>
                   </div>
                 </div>
 
-                <div className={`${styles.collapseInline} ${sttMode === 'whisper' ? styles.collapsed : ''}`}>
-                  <span className={styles.hint}>Cmd+Enter 提交</span>
+                <div className={styles.voiceRight}>
+                  {sttError
+                    ? <span className={styles.sttError} title={sttError}>⚠ {sttError}</span>
+                    : <span className={`${styles.hint} ${sttMode === 'whisper' ? styles.hidden : ''}`}>Cmd+Enter 提交</span>
+                  }
                 </div>
               </div>
 
