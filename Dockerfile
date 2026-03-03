@@ -1,16 +1,15 @@
 # ── Build stage ───────────────────────────────────────────────────────────────
-FROM node:lts-alpine AS build
+FROM oven/bun:1-alpine AS build
 
-ENV NPM_CONFIG_UPDATE_NOTIFIER=false
-ENV NPM_CONFIG_FUND=false
+ENV BUN_CONFIG_UPDATE_NOTIFIER=false
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 COPY . ./
-RUN npm run build
+RUN bun run build
 
 # ── Runtime stage (Caddy) ─────────────────────────────────────────────────────
 FROM caddy
