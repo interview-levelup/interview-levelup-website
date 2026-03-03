@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useInterviewStore } from '@/store/interviewStore'
 import styles from './DashboardPage.module.scss'
+import InterviewIcon from '@/assets/icon-interview.svg?react'
 
 const levelLabel: Record<string, string> = {
   junior: '初级',
@@ -31,7 +32,7 @@ export default function DashboardPage() {
           <p className={styles.subtitle}>共 {list.length} 场</p>
         </div>
         <button className={styles.newBtn} onClick={() => navigate('/interviews/new')}>
-          + 新面试
+          <InterviewIcon className={styles.plusIcon} /> 新面试
         </button>
       </div>
 

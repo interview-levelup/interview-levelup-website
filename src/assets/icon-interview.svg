@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+  <!-- back bubble (interviewer) -->
+  <path d="M21 10c0-3.87-3.58-7-8-7S5 6.13 5 10c0 1.7.64 3.27 1.7 4.54L5 18l3.83-1.2A9.1 9.1 0 0 0 13 17.93"/>
+  <!-- front bubble (candidate) -->
+  <path d="M12 14c0 2.76 2.24 5 5 5h.5l2.5 1-1-2.5A4.96 4.96 0 0 0 22 14c0-2.76-2.24-5-5-5s-5 2.24-5 5z"/>
+</svg>

@@ -27,6 +27,16 @@
 
 .newBtn {
   @include btn;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: $text;
+}
+
+.plusIcon {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
 }
 
 .empty {
