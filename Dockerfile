@@ -9,6 +9,11 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
 COPY . ./
+
+# Receive the API base URL at build time so Vite can bake it into the bundle
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 RUN bun run build
 
 # ── Runtime stage (Caddy) ─────────────────────────────────────────────────────
