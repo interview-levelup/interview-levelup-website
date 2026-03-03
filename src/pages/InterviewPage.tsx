@@ -196,12 +196,14 @@ export default function InterviewPage() {
           ttsBufferRef.current = match[2] ?? ''
         }
       })
-      // Enqueue any remaining text once the stream ends
-      if (autoTTS && ttsBufferRef.current.trim()) {
+      // Flush remaining buffer only when the interview is NOT finished.
+      // If finished, the streamed tokens were the final report — don't TTS them.
+      if (!finished && autoTTS && ttsBufferRef.current.trim()) {
         enqueue(ttsBufferRef.current.trim())
-        ttsBufferRef.current = ''
       }
+      ttsBufferRef.current = ''
       if (finished) {
+        stopTTS() // cancel any report content already queued/playing
         await fetchInterview(id)
       }
     } finally {
