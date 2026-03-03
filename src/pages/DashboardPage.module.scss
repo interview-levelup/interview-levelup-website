@@ -78,10 +78,11 @@
   padding: 0.2rem 0.6rem;
   border-radius: 99px;
 
-  &.ongoing  { background: rgba($success,    0.15); color: $success; }
-  &.finished { background: rgba($text-muted, 0.12); color: $text-muted; }
-  &.aborted  { background: rgba($danger,     0.12); color: $danger; }
-  &.ended    { background: rgba($warning,    0.15); color: $warning; }
+  &.ongoing    { background: rgba($success,    0.15); color: $success; }
+  &.finished   { background: rgba($text-muted, 0.12); color: $text-muted; }
+  &.aborted    { background: rgba($danger,     0.12); color: $danger; }
+  &.user_ended { background: rgba($warning,    0.15); color: $warning; }
+  &.ended      { background: rgba($text-muted, 0.12); color: $text-muted; } // legacy
 }
 
 .cardMeta {

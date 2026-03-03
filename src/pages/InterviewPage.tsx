@@ -79,7 +79,7 @@ function EvalBlock({ score, detail }: { score: number | undefined | null; detail
 export default function InterviewPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { current, rounds, loading, fetchInterview, submitAnswer, endInterview, reset } =
+  const { current, rounds, loading, fetchInterview, submitAnswer, reset } =
     useInterviewStore()
   const [answer, setAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -135,8 +135,10 @@ export default function InterviewPage() {
     setEnding(true)
     setShowEndConfirm(false)
     try {
-      await endInterview(id)
-      await fetchInterview(id)
+      const { finished } = await submitAnswer(id, '我想结束面试')
+      if (finished) {
+        await fetchInterview(id)
+      }
     } finally {
       setEnding(false)
     }
@@ -149,17 +151,19 @@ export default function InterviewPage() {
   const isFinished = current.status !== 'ongoing'
 
   const statusLabelMap: Record<string, { text: string; cls: string }> = {
-    ongoing:  { text: '进行中', cls: styles.ongoing },
-    finished: { text: '已完成', cls: styles.done },
-    aborted:  { text: '已中止', cls: styles.aborted },
-    ended:    { text: '已结束', cls: styles.ended },
+    ongoing:    { text: '进行中', cls: styles.ongoing },
+    finished:   { text: '已完成', cls: styles.done },
+    aborted:    { text: '已中止', cls: styles.aborted },
+    user_ended: { text: '主动结束', cls: styles.userEnded },
+    ended:      { text: '已结束', cls: styles.done }, // legacy rows
   }
   const statusLabel = statusLabelMap[current.status] ?? { text: '进行中', cls: styles.ongoing }
 
   const bannerMessageMap: Record<string, string> = {
-    finished: '面试已完成，点击左侧「查看报告」查看完整评估',
-    aborted:  '面试因参与度不足被系统终止，点击左侧「查看报告」查看评估',
-    ended:    '面试已手动结束',
+    finished:   '面试已完成，点击左侧「查看报告」查看完整评估',
+    aborted:    '面试因不当行为被系统终止，点击左侧「查看报告」查看评估',
+    user_ended: '你主动结束了本次面试，点击左侧「查看报告」查看评估',
+    ended:      '面试已结束，点击左侧「查看报告」查看完整评估', // legacy rows
   }
   const bannerMessage = bannerMessageMap[current.status] ?? '面试已结束'
 

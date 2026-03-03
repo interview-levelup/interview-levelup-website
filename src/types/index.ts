@@ -11,7 +11,8 @@ export interface Interview {
   level: string
   style: string
   max_rounds: number
-  status: 'ongoing' | 'finished' | 'aborted' | 'ended'
+  answered_rounds: number
+  status: 'ongoing' | 'finished' | 'aborted' | 'user_ended'
   final_report?: string
   created_at: string
   updated_at: string

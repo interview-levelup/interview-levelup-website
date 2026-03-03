@@ -13,7 +13,6 @@ interface InterviewState {
   startInterview: (payload: StartInterviewPayload) => Promise<Interview>
   fetchInterview: (id: string) => Promise<void>
   submitAnswer: (id: string, answer: string) => Promise<{ finished: boolean }>
-  endInterview: (id: string) => Promise<void>
   reset: () => void
 }
 
@@ -82,19 +81,6 @@ export const useInterviewStore = create<InterviewState>()((set) => ({
         }
       })
       return { finished: data.finished }
-    } catch (e: unknown) {
-      set({ error: (e as Error).message })
-      throw e
-    } finally {
-      set({ loading: false })
-    }
-  },
-
-  endInterview: async (id) => {
-    set({ loading: true, error: null })
-    try {
-      const { data } = await api.endInterview(id)
-      set({ current: data.interview })
     } catch (e: unknown) {
       set({ error: (e as Error).message })
       throw e

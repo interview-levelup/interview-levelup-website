@@ -10,10 +10,11 @@ const levelLabel: Record<string, string> = {
 }
 
 const statusLabel: Record<string, string> = {
-  ongoing:  '进行中',
-  finished: '已完成',
-  aborted:  '已中止',
-  ended:    '已结束',
+  ongoing:    '进行中',
+  finished:   '已完成',
+  aborted:    '已中止',
+  user_ended: '主动结束',
+  ended:      '已结束', // legacy rows
 }
 
 export default function DashboardPage() {
@@ -59,7 +60,7 @@ export default function DashboardPage() {
               <span>·</span>
               <span>{iv.style}</span>
               <span>·</span>
-              <span>{iv.max_rounds} 轮</span>
+              <span>{iv.answered_rounds} / {iv.max_rounds} 轮</span>
             </div>
             <div className={styles.cardDate}>
               {new Date(iv.created_at).toLocaleString('zh-CN')}
