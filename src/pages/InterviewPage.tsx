@@ -6,6 +6,10 @@ import ReportModal from '@/components/ReportModal'
 import { useTTS } from '@/hooks/useTTS'
 import { useSTT, type SttMode } from '@/hooks/useSTT'
 import styles from './InterviewPage.module.scss'
+import IconSpeakerOn  from '@/assets/icon-speaker-on.svg?react'
+import IconSpeakerOff from '@/assets/icon-speaker-off.svg?react'
+import IconMic        from '@/assets/icon-mic.svg?react'
+import IconMicStop    from '@/assets/icon-mic-stop.svg?react'
 
 // Formats a timestamp for chat bubbles:
 // - same day  → "14:05"
@@ -370,7 +374,7 @@ export default function InterviewPage() {
                     onClick={() => speak(r.question)}
                     disabled={!voicesReady}
                     title={voicesReady ? '朗读问题' : '音声加载中...'}
-                  >🔊</button>
+                  ><IconSpeakerOn className={styles.iconSvgSm} aria-label="朗读" /></button>
                 </div>
                 <div className={styles.md}><ReactMarkdown>{r.question}</ReactMarkdown></div>
                 <span className={styles.bubbleTime}>{formatBubbleTime(r.created_at)}</span>
@@ -457,7 +461,7 @@ export default function InterviewPage() {
                     }}
                     title={autoTTS ? '关闭自动朗读' : '开启自动朗读'}
                   >
-                    {autoTTS ? '🔊' : '🔇'}
+                    {autoTTS ? <IconSpeakerOn className={styles.iconSvg} /> : <IconSpeakerOff className={styles.iconSvg} />}
                   </button>
 
                   {/* Mic button */}
@@ -470,19 +474,24 @@ export default function InterviewPage() {
                     disabled={isStreaming}
                     title={sttMode === 'webspeech' ? '按住说话 (Web Speech)' : listening ? '点击停止录音' : '点击开始录音 (Whisper)'}
                   >
-                    {listening ? '⏹' : '🎤'}
+                    {listening ? <IconMicStop className={styles.iconSvg} /> : <IconMic className={styles.iconSvg} />}
                   </button>
 
-                  {/* STT mode picker */}
-                  <select
-                    className={styles.sttSelect}
-                    value={sttMode}
-                    onChange={(e) => setSttMode(e.target.value as SttMode)}
-                    disabled={listening}
-                  >
-                    <option value="webspeech">Web Speech</option>
-                    <option value="whisper">Whisper</option>
-                  </select>
+                  {/* STT mode segmented toggle */}
+                  <div className={styles.sttToggle}>
+                    <button
+                      type="button"
+                      className={`${styles.sttOption} ${sttMode === 'webspeech' ? styles.sttActive : ''}`}
+                      onClick={() => !listening && setSttMode('webspeech')}
+                      disabled={listening}
+                    >Web Speech</button>
+                    <button
+                      type="button"
+                      className={`${styles.sttOption} ${sttMode === 'whisper' ? styles.sttActive : ''}`}
+                      onClick={() => !listening && setSttMode('whisper')}
+                      disabled={listening}
+                    >Whisper</button>
+                  </div>
                 </div>
 
                 <div className={styles.voiceRight}>

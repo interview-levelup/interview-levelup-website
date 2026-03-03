@@ -484,14 +484,33 @@
 .speakBtn {
   background: none;
   border: none;
-  padding: 0.1rem 0.3rem;
-  font-size: 0.85rem;
+  padding: 0.15rem 0.35rem;
+  display: inline-flex;
+  align-items: center;
   cursor: pointer;
-  opacity: 0.4;
+  color: $text;
+  opacity: 0.35;
   transition: opacity 0.15s;
   line-height: 1;
 
   &:hover { opacity: 0.85; }
+  &:disabled { opacity: 0.15; cursor: not-allowed; }
+}
+
+// Inline SVG icon — voice bar buttons (TTS toggle + mic)
+.iconSvg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  flex-shrink: 0;
+}
+
+// Smaller variant used for the speak button inside chat bubbles
+.iconSvgSm {
+  width: 15px;
+  height: 15px;
+  display: block;
+  flex-shrink: 0;
 }
 
 // Streaming AI bubble — shown while the agent is still generating
@@ -547,12 +566,13 @@
   background: none;
   border: 1px solid $border;
   border-radius: $radius;
-  padding: 0.2rem 0.5rem;
-  font-size: 1rem;
+  padding: 0.3rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   color: $text-muted;
   transition: all 0.15s;
-  line-height: 1.4;
 
   &:hover { border-color: $primary; color: $text; }
   &:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -569,12 +589,13 @@
   background: none;
   border: 1px solid $border;
   border-radius: $radius;
-  padding: 0.2rem 0.65rem;
-  font-size: 1rem;
+  padding: 0.3rem 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   color: $text-muted;
   transition: all 0.15s;
-  line-height: 1.4;
   user-select: none;
 
   &:hover:not(:disabled) {
@@ -597,17 +618,42 @@
   50%       { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
 }
 
-// STT mode selector
-.sttSelect {
-  background: $bg-input;
+// STT mode segmented toggle
+.sttToggle {
+  display: inline-flex;
   border: 1px solid $border;
   border-radius: $radius;
-  padding: 0.2rem 0.4rem;
-  font-size: 0.75rem;
+  overflow: hidden;
+  background: $bg-input;
+}
+
+.sttOption {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 500;
   color: $text-muted;
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition: background 0.15s, color 0.15s;
+  letter-spacing: 0.01em;
 
-  &:focus { outline: none; border-color: $primary; }
+  & + & {
+    border-left: 1px solid $border;
+  }
+
+  &:hover:not(:disabled) {
+    color: $text;
+    background: rgba($primary, 0.06);
+  }
+
   &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.sttActive {
+  background: rgba($primary, 0.15);
+  color: $primary;
+  font-weight: 600;
+
+  &:hover { background: rgba($primary, 0.18); }
 }
