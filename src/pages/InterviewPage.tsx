@@ -102,11 +102,8 @@ export default function InterviewPage() {
   // Tracks how many chars of streamingQuestion have already been fed to TTS
   // (used for initial first-question stream; submit stream uses its own token cb)
   const ttsStartProcessedRef = useRef(0)
-  // Ref mirror of autoTTS to avoid stale closures in effects that only depend on isStreaming
-  const autoTTSRef = useRef(autoTTS)
-  useEffect(() => { autoTTSRef.current = autoTTS }, [autoTTS])
 
-  const { speak, enqueue, stop: stopTTS, voicesReady } = useTTS()
+  const { speak, enqueue, stop: stopTTS, speaking, voicesReady } = useTTS()
   const { listening, startListening, stopListening } = useSTT(
     sttMode,
     (text) => setAnswer((prev) => prev + text),
@@ -171,9 +168,9 @@ export default function InterviewPage() {
   }, [streamingQuestion, isStreaming, rounds.length, autoTTS, enqueue])
 
   // When initial stream finishes (isStreaming flips false with still rounds.length === 1),
-  // flush any remaining buffer. Use autoTTSRef to avoid stale closure.
+  // flush any remaining buffer.
   useEffect(() => {
-    if (autoTTSRef.current && !isStreaming && rounds.length === 1 && ttsStartProcessedRef.current > 0) {
+    if (autoTTS && !isStreaming && rounds.length === 1 && ttsStartProcessedRef.current > 0) {
       if (ttsBufferRef.current.trim()) {
         enqueue(ttsBufferRef.current.trim())
         ttsBufferRef.current = ''
@@ -203,14 +200,12 @@ export default function InterviewPage() {
           ttsBufferRef.current = match[2] ?? ''
         }
       })
-      // Flush remaining buffer only when the interview is NOT finished.
-      // If finished, the streamed tokens were the final report — don't TTS them.
-      if (!finished && autoTTS && ttsBufferRef.current.trim()) {
+      // Enqueue any remaining text once the stream ends
+      if (autoTTS && ttsBufferRef.current.trim()) {
         enqueue(ttsBufferRef.current.trim())
+        ttsBufferRef.current = ''
       }
-      ttsBufferRef.current = ''
       if (finished) {
-        stopTTS() // cancel any report content already queued/playing
         await fetchInterview(id)
       }
     } finally {
@@ -450,16 +445,9 @@ export default function InterviewPage() {
                   <button
                     type="button"
                     className={`${styles.voiceIconBtn} ${autoTTS ? styles.active : ''}`}
-                    onClick={() => {
-                      const next = !autoTTS
-                      setAutoTTS(next)
-                      if (!next) {
-                        // Turning off: immediately kill all queued + playing speech
-                        stopTTS()
-                        ttsBufferRef.current = ''
-                      }
-                    }}
-                    title={autoTTS ? '关闭自动朗读' : '开启自动朗读'}
+                    onClick={() => { setAutoTTS((v) => !v); if (speaking) stopTTS() }}
+                    disabled={!voicesReady}
+                    title={!voicesReady ? '音声加载中...' : autoTTS ? '关闭自动朗读' : '开启自动朗读'}
                   >
                     {autoTTS ? <IconSpeakerOn className={styles.iconSvg} /> : <IconSpeakerOff className={styles.iconSvg} />}
                   </button>

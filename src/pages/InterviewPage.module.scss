@@ -393,6 +393,15 @@
   color: $text-muted;
 }
 
+.sttError {
+  font-size: 0.78rem;
+  color: $danger;
+  padding: 0.3rem 0.5rem;
+  background: rgba($danger, 0.08);
+  border-radius: $radius;
+  margin: 0 0 0.25rem;
+}
+
 // .endRow removed — button moved into inputActions
 
 .endBtn {
@@ -566,7 +575,9 @@
   background: none;
   border: 1px solid $border;
   border-radius: $radius;
-  padding: 0.3rem 0.5rem;
+  width: 38px;
+  height: 32px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -589,7 +600,9 @@
   background: none;
   border: 1px solid $border;
   border-radius: $radius;
-  padding: 0.3rem 0.65rem;
+  width: 38px;
+  height: 32px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;

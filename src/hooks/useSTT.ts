@@ -89,9 +89,12 @@ export function useSTT(
         stream.getTracks().forEach((t) => t.stop())
         setListening(false)
 
-        const blob = new Blob(chunksRef.current, { type: mr.mimeType || 'audio/webm' })
+        // Match filename extension to actual recorded mime type
+        const actualMime = mr.mimeType || 'audio/webm'
+        const ext = actualMime.includes('mp4') ? 'mp4' : actualMime.includes('ogg') ? 'ogg' : 'webm'
+        const blob = new Blob(chunksRef.current, { type: actualMime })
         const formData = new FormData()
-        formData.append('audio', blob, 'recording.webm')
+        formData.append('audio', blob, `recording.${ext}`)
 
         const token = localStorage.getItem('token')
         try {
@@ -101,6 +104,10 @@ export function useSTT(
             body: formData,
           })
           const data = await resp.json()
+          if (!resp.ok) {
+            onError?.(data.error ?? `转写失败 (${resp.status})`)
+            return
+          }
           if (data.text) onTranscript(data.text)
           else onError?.('Whisper 未返回转写结果')
         } catch {
