@@ -470,3 +470,144 @@
   &:hover:not(:disabled) { background: #dc2626; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
+
+// ── Voice / streaming features ────────────────────────────────────────────────
+
+// Header row inside AI bubbles (label + speak button)
+.bubbleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.speakBtn {
+  background: none;
+  border: none;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+  line-height: 1;
+
+  &:hover { opacity: 0.85; }
+}
+
+// Streaming AI bubble — shown while the agent is still generating
+// Applied on top of .bubble.ai while a question is still streaming in
+.streamingActive {
+  border-left: 3px solid $primary;
+  animation: streamPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes streamPulse {
+  0%, 100% { border-left-color: $primary; }
+  50%       { border-left-color: rgba($primary, 0.35); }
+}
+
+// Blinking cursor appended to streaming text
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: $text;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 0.9s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+// Voice controls bar (between textarea and inputActions)
+.voiceBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.voiceLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.voiceRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// TTS mute toggle + any small icon button in voice bar
+.voiceIconBtn {
+  background: none;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 0.2rem 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  color: $text-muted;
+  transition: all 0.15s;
+  line-height: 1.4;
+
+  &:hover { border-color: $primary; color: $text; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  &.active {
+    border-color: $primary;
+    background: rgba($primary, 0.08);
+    color: $primary;
+  }
+}
+
+// Microphone record button
+.micBtn {
+  background: none;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 0.2rem 0.65rem;
+  font-size: 1rem;
+  cursor: pointer;
+  color: $text-muted;
+  transition: all 0.15s;
+  line-height: 1.4;
+  user-select: none;
+
+  &:hover:not(:disabled) {
+    border-color: $primary;
+    color: $text;
+  }
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  // Recording state — red pulsing border
+  &.listening {
+    border-color: #ef4444;
+    color: #ef4444;
+    animation: micPulse 1s ease-in-out infinite;
+  }
+}
+
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50%       { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+}
+
+// STT mode selector
+.sttSelect {
+  background: $bg-input;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.75rem;
+  color: $text-muted;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:focus { outline: none; border-color: $primary; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}

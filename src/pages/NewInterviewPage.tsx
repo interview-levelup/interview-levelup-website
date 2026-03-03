@@ -28,13 +28,21 @@ export default function NewInterviewPage() {
   const [level, setLevel] = useState('junior')
   const [style, setStyle] = useState('standard')
   const [maxRounds, setMaxRounds] = useState(5)
-  const { startInterview, loading, error } = useInterviewStore()
+  const [starting, setStarting] = useState(false)
+  const { startInterviewStream, error } = useInterviewStore()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    const iv = await startInterview({ role, level, style, max_rounds: maxRounds })
-    navigate(`/interviews/${iv.id}`)
+    setStarting(true)
+    try {
+      await startInterviewStream(
+        { role, level, style, max_rounds: maxRounds },
+        (id) => navigate(`/interviews/${id}`),
+      )
+    } finally {
+      setStarting(false)
+    }
   }
 
   return (
@@ -128,8 +136,8 @@ export default function NewInterviewPage() {
             <button type="button" className={styles.cancelBtn} onClick={() => navigate('/')}>
               取消
             </button>
-            <button type="submit" className={styles.submitBtn} disabled={loading || !role.trim()}>
-              {loading ? '准备中...' : '开始面试'}
+            <button type="submit" className={styles.submitBtn} disabled={starting || !role.trim()}>
+              {starting ? '准备中...' : '开始面试'}
             </button>
           </div>
         </form>

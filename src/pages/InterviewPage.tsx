@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import { useInterviewStore } from '@/store/interviewStore'
 import ReportModal from '@/components/ReportModal'
+import { useTTS } from '@/hooks/useTTS'
+import { useSTT, type SttMode } from '@/hooks/useSTT'
 import styles from './InterviewPage.module.scss'
 
 // Formats a timestamp for chat bubbles:
@@ -79,16 +81,30 @@ function EvalBlock({ score, detail }: { score: number | undefined | null; detail
 export default function InterviewPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { current, rounds, loading, fetchInterview, submitAnswer, reset } =
+  const { current, rounds, loading, fetchInterview, submitAnswer, submitAnswerStream, reset, streamingQuestion, isStreaming } =
     useInterviewStore()
   const [answer, setAnswer] = useState('')
+  const [pendingAnswer, setPendingAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [ending, setEnding] = useState(false)
   const [showEndConfirm, setShowEndConfirm] = useState(false)
   const [showReport, setShowReport] = useState(false)
+  const [sttMode, setSttMode] = useState<SttMode>('webspeech')
+  const [autoTTS, setAutoTTS] = useState(true)
   const bottomRef = useRef<HTMLDivElement>(null)
   const sidebarRef = useRef<HTMLDivElement>(null)
   const [canScrollDown, setCanScrollDown] = useState(false)
+  const ttsBufferRef = useRef('')
+  // Tracks how many chars of streamingQuestion have already been fed to TTS
+  // (used for initial first-question stream; submit stream uses its own token cb)
+  const ttsStartProcessedRef = useRef(0)
+
+  const { speak, enqueue, stop: stopTTS, speaking, voicesReady } = useTTS()
+  const { listening, startListening, stopListening } = useSTT(
+    sttMode,
+    (text) => setAnswer((prev) => prev + text),
+    (msg) => console.warn('[STT]', msg),
+  )
 
   const checkSidebarScroll = useCallback(() => {
     const el = sidebarRef.current
@@ -107,26 +123,90 @@ export default function InterviewPage() {
   }, [checkSidebarScroll, rounds])
 
   useEffect(() => {
-    if (id) fetchInterview(id)
-    return () => { reset() }
-  }, [id, fetchInterview, reset])
+    // Only fetch if this interview isn't already in the store (e.g. direct URL / back-nav).
+    // When arriving from the stream-start flow, the store already has current set.
+    if (id && current?.id !== id) fetchInterview(id)
+    // Do NOT reset on cleanup: React Strict Mode runs cleanup+effect twice on mount,
+    // which would wipe the store mid-stream. Reset is handled explicitly (back button
+    // or starting a new interview).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
+
+  // Stop TTS when leaving the page
+  useEffect(() => {
+    return () => stopTTS()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [rounds])
 
+  // Also scroll when streaming text grows
+  useEffect(() => {
+    if (isStreaming) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [streamingQuestion, isStreaming])
+
+  // Auto-TTS for the initial first question (start-stream path).
+  // handleSubmit covers subsequent rounds via its own token callback.
+  useEffect(() => {
+    if (!autoTTS || !isStreaming || rounds.length > 0) return
+    const text = streamingQuestion ?? ''
+    const delta = text.slice(ttsStartProcessedRef.current)
+    if (!delta) return
+    ttsBufferRef.current += delta
+    ttsStartProcessedRef.current = text.length
+    const match = ttsBufferRef.current.match(/^([\s\S]*?[。！？.!?])([\s\S]*)$/)
+    if (match) {
+      enqueue(match[1])
+      ttsBufferRef.current = match[2] ?? ''
+    }
+  }, [streamingQuestion, isStreaming, rounds.length, autoTTS, enqueue])
+
+  // When initial stream finishes (isStreaming flips false with still rounds.length === 1),
+  // flush any remaining buffer.
+  useEffect(() => {
+    if (autoTTS && !isStreaming && rounds.length === 1 && ttsStartProcessedRef.current > 0) {
+      if (ttsBufferRef.current.trim()) {
+        enqueue(ttsBufferRef.current.trim())
+        ttsBufferRef.current = ''
+      }
+      ttsStartProcessedRef.current = 0
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isStreaming])
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!id || !answer.trim()) return
+    if (!id || !answer.trim() || isStreaming) return
+    const trimmedAnswer = answer.trim()
     setSubmitting(true)
+    setAnswer('')
+    setPendingAnswer(trimmedAnswer)
+    stopTTS()
+    ttsBufferRef.current = ''
     try {
-      const { finished } = await submitAnswer(id, answer.trim())
-      setAnswer('')
+      const { finished } = await submitAnswerStream(id, trimmedAnswer, (token) => {
+        if (!autoTTS) return
+        // Accumulate tokens; enqueue complete sentences as they arrive (no cancel)
+        ttsBufferRef.current += token
+        const match = ttsBufferRef.current.match(/^([\s\S]*?[。！？.!?])([\s\S]*)$/)
+        if (match) {
+          enqueue(match[1])
+          ttsBufferRef.current = match[2] ?? ''
+        }
+      })
+      // Enqueue any remaining text once the stream ends
+      if (autoTTS && ttsBufferRef.current.trim()) {
+        enqueue(ttsBufferRef.current.trim())
+        ttsBufferRef.current = ''
+      }
       if (finished) {
         await fetchInterview(id)
       }
     } finally {
       setSubmitting(false)
+      setPendingAnswer('')
     }
   }
 
@@ -213,7 +293,7 @@ export default function InterviewPage() {
       )}
       <div className={styles.sidebarWrap}>
       <div className={styles.sidebar} ref={sidebarRef}>
-        <button className={styles.backBtn} onClick={() => navigate('/')}>返回</button>
+        <button className={styles.backBtn} onClick={() => { reset(); navigate('/') }}>返回</button>
         <div className={styles.meta}>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>岗位</span>
@@ -277,7 +357,16 @@ export default function InterviewPage() {
           {rounds.map((r, i) => (
             <div key={r.id} className={styles.roundWrapper}>
               <div className={styles.bubble + ' ' + (r.is_sub ? styles.aiSub : r.is_followup ? styles.aiFollowup : styles.ai)}>
-                <span className={styles.bubbleLabel}>面试官 {roundLabels[i]}</span>
+                <div className={styles.bubbleHeader}>
+                  <span className={styles.bubbleLabel}>面试官 {roundLabels[i]}</span>
+                  <button
+                    type="button"
+                    className={styles.speakBtn}
+                    onClick={() => speak(r.question)}
+                    disabled={!voicesReady}
+                    title={voicesReady ? '朗读问题' : '音声加载中...'}
+                  >🔊</button>
+                </div>
                 <div className={styles.md}><ReactMarkdown>{r.question}</ReactMarkdown></div>
                 <span className={styles.bubbleTime}>{formatBubbleTime(r.created_at)}</span>
               </div>
@@ -296,9 +385,34 @@ export default function InterviewPage() {
             </div>
           ))}
 
+          {/* Optimistic user answer bubble — visible immediately after submit, before backend confirms */}
+          {pendingAnswer && (
+            <div className={styles.bubble + ' ' + styles.user}>
+              <span className={styles.bubbleLabel}>你</span>
+              <div className={styles.md}><ReactMarkdown>{pendingAnswer}</ReactMarkdown></div>
+            </div>
+          )}
+
           {isFinished && (
             <div className={styles.finishedBanner}>
               {bannerMessage}
+            </div>
+          )}
+
+          {/* Streaming AI bubble — identical structure to real round bubbles to avoid flash on transition */}
+          {!isFinished && isStreaming && (
+            <div className={styles.roundWrapper}>
+              <div className={styles.bubble + ' ' + styles.ai + ' ' + styles.streamingActive}>
+                <div className={styles.bubbleHeader}>
+                  <span className={styles.bubbleLabel}>
+                    面试官{!streamingQuestion && ' (思考中...)'}
+                  </span>
+                </div>
+                <div className={styles.md}>
+                  <ReactMarkdown>{streamingQuestion ?? ''}</ReactMarkdown>
+                  <span className={styles.cursor} aria-hidden />
+                </div>
+              </div>
             </div>
           )}
 
@@ -310,27 +424,72 @@ export default function InterviewPage() {
             <form className={styles.inputArea} onSubmit={handleSubmit}>
               <textarea
                 className={styles.textarea}
-                placeholder="输入你的回答..."
+                placeholder={listening ? '正在聆听...' : isStreaming ? '等待面试官...' : '输入你的回答...'}
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
                 rows={4}
+                disabled={isStreaming}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit(e as unknown as FormEvent)
                 }}
               />
+
+              {/* Voice controls bar */}
+              <div className={styles.voiceBar}>
+                <div className={styles.voiceLeft}>
+                  {/* TTS mute toggle */}
+                  <button
+                    type="button"
+                    className={`${styles.voiceIconBtn} ${autoTTS ? styles.active : ''}`}
+                    onClick={() => { setAutoTTS((v) => !v); if (speaking) stopTTS() }}
+                    disabled={!voicesReady}
+                    title={!voicesReady ? '音声加载中...' : autoTTS ? '关闭自动朗读' : '开启自动朗读'}
+                  >
+                    {autoTTS ? '🔊' : '🔇'}
+                  </button>
+
+                  {/* Mic button */}
+                  <button
+                    type="button"
+                    className={`${styles.micBtn} ${listening ? styles.listening : ''}`}
+                    onMouseDown={() => { if (sttMode === 'webspeech' && !listening) startListening() }}
+                    onMouseUp={() => { if (sttMode === 'webspeech' && listening) stopListening() }}
+                    onClick={() => { if (sttMode === 'whisper') { if (listening) stopListening(); else startListening() } }}
+                    disabled={isStreaming}
+                    title={sttMode === 'webspeech' ? '按住说话 (Web Speech)' : listening ? '点击停止录音' : '点击开始录音 (Whisper)'}
+                  >
+                    {listening ? '⏹' : '🎤'}
+                  </button>
+
+                  {/* STT mode picker */}
+                  <select
+                    className={styles.sttSelect}
+                    value={sttMode}
+                    onChange={(e) => setSttMode(e.target.value as SttMode)}
+                    disabled={listening}
+                  >
+                    <option value="webspeech">Web Speech</option>
+                    <option value="whisper">Whisper</option>
+                  </select>
+                </div>
+
+                <div className={styles.voiceRight}>
+                  <span className={styles.hint}>Cmd+Enter 提交</span>
+                </div>
+              </div>
+
               <div className={styles.inputActions}>
                 <button
                   type="button"
                   className={styles.endBtn}
                   onClick={() => setShowEndConfirm(true)}
-                  disabled={ending}
+                  disabled={ending || isStreaming}
                 >
                   {ending ? '结束中...' : '结束面试'}
                 </button>
                 <div className={styles.inputRight}>
-                  <span className={styles.hint}>Cmd+Enter 提交</span>
-                  <button type="submit" disabled={submitting || !answer.trim()}>
-                    {submitting ? '提交中...' : '提交回答'}
+                  <button type="submit" disabled={submitting || isStreaming || !answer.trim()}>
+                    {submitting || isStreaming ? (isStreaming ? '等待回复...' : '提交中...') : '提交回答'}
                   </button>
                 </div>
               </div>
