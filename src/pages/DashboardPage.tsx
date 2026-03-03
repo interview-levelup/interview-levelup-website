@@ -15,7 +15,6 @@ const statusLabel: Record<string, string> = {
   finished:   '已完成',
   aborted:    '已中止',
   user_ended: '主动结束',
-  ended:      '已结束', // legacy rows
 }
 
 export default function DashboardPage() {
