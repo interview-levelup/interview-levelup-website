@@ -1,0 +1,39 @@
+# global options
+{
+    admin off            # no need for admin API in Railway's environment
+    persist_config off   # storage isn't persistent anyway
+    auto_https off       # Railway handles HTTPS; enabling this causes issues
+
+    # runtime logs
+    log {
+        format json
+    }
+
+    # server options
+    servers {
+        trusted_proxies static private_ranges 100.0.0.0/8
+    }
+}
+
+# site block — Railway injects $PORT automatically (default fallback: 3000)
+:{$PORT:3000} {
+    # access logs
+    log {
+        format json
+    }
+
+    # health check for Railway
+    rewrite /health /*
+
+    # serve from the Vite build output folder
+    root * dist
+
+    # enable gzip compression
+    encode gzip
+
+    # serve static files
+    file_server
+
+    # fallback to index.html for client-side routing (React Router)
+    try_files {path} /index.html
+}
