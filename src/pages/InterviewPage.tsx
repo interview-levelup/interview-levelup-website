@@ -426,17 +426,19 @@ export default function InterviewPage() {
         {!isFinished && (
           <>
             <form className={styles.inputArea} onSubmit={handleSubmit}>
-              <textarea
-                className={styles.textarea}
-                placeholder={listening ? '正在聆听...' : isStreaming ? '等待面试官...' : '输入你的回答...'}
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                rows={4}
-                disabled={isStreaming}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit(e as unknown as FormEvent)
-                }}
-              />
+              <div className={`${styles.collapseWrap} ${sttMode === 'whisper' ? styles.collapsed : ''}`}>
+                <textarea
+                  className={styles.textarea}
+                  placeholder={listening ? '正在聆听...' : isStreaming ? '等待面试官...' : '输入你的回答...'}
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  rows={4}
+                  disabled={isStreaming}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit(e as unknown as FormEvent)
+                  }}
+                />
+              </div>
 
               {/* Voice controls bar */}
               <div className={styles.voiceBar}>
@@ -482,7 +484,7 @@ export default function InterviewPage() {
                   </div>
                 </div>
 
-                <div className={styles.voiceRight}>
+                <div className={`${styles.collapseInline} ${sttMode === 'whisper' ? styles.collapsed : ''}`}>
                   <span className={styles.hint}>Cmd+Enter 提交</span>
                 </div>
               </div>
@@ -496,10 +498,12 @@ export default function InterviewPage() {
                 >
                   {ending ? '结束中...' : '结束面试'}
                 </button>
-                <div className={styles.inputRight}>
-                  <button type="submit" disabled={submitting || isStreaming || !answer.trim()}>
-                    {submitting || isStreaming ? (isStreaming ? '等待回复...' : '提交中...') : '提交回答'}
-                  </button>
+                <div className={`${styles.collapseInline} ${sttMode === 'whisper' ? styles.collapsed : ''}`}>
+                  <div className={styles.inputRight}>
+                    <button type="submit" disabled={submitting || isStreaming || !answer.trim()}>
+                      {submitting || isStreaming ? (isStreaming ? '等待回复...' : '提交中...') : '提交回答'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </form>
