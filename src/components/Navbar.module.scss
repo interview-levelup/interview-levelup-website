@@ -19,8 +19,37 @@
 .brand {
   display: flex;
   align-items: center;
+  gap: 0.55rem;
   text-decoration: none;
-  &:hover { opacity: 0.9; }
+  &:hover {
+    opacity: 0.9;
+    text-decoration: none;
+  }
+}
+
+.brandName {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.3em;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.brandWord {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $text;
+  letter-spacing: 0.01em;
+}
+
+.brandAccent {
+  font-size: 1rem;
+  font-weight: 700;
+  background: linear-gradient(100deg, $text 30%, $primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .logo {

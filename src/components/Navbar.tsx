@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import ChangePasswordModal from './ChangePasswordModal'
 import styles from './Navbar.module.scss'
-import logo from '@/assets/Logo.png'
+import logo from '@/assets/logo.png'
 
 export default function Navbar() {
   const { user, logout } = useAuthStore()
@@ -33,6 +33,10 @@ export default function Navbar() {
       <nav className={styles.nav}>
         <Link to="/" className={styles.brand}>
           <img src={logo} alt="Interview LevelUp" className={styles.logo} />
+          <span className={styles.brandName}>
+            <span className={styles.brandWord}>Interview</span>
+            <span className={styles.brandAccent}>Levelup</span>
+          </span>
         </Link>
         {user && (
           <div className={styles.userMenu} ref={menuRef}>
