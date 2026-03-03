@@ -2,7 +2,7 @@
 
 > **GitHub description:** React + TypeScript frontend for an AI mock interview platform — real-time streaming UI, voice input (Web Speech & Whisper), text-to-speech playback, and per-answer scoring.
 
-React single-page application for [Interview LevelUp](../interview-levelup-backend). Connects to the Go backend via REST and SSE streaming to deliver a real-time mock interview experience with voice support.
+React single-page application for [Interview Levelup](https://github.com/interview-levelup/interview-levelup-backend). Connects to the Go backend via REST and SSE streaming to deliver a real-time mock interview experience with voice support.
 
 ## Stack
 
@@ -44,7 +44,7 @@ React single-page application for [Interview LevelUp](../interview-levelup-backe
 
 ```bash
 cp .env.example .env
-# Set: VITE_API_BASE_URL=http://localhost:8080
+# Set: VITE_API_BASE_URL=http://localhost:9786
 
 npm install
 npm run dev
@@ -72,5 +72,5 @@ src/
 ## Connecting to the Backend
 
 This app expects:
-- [interview-levelup-backend](../interview-levelup-backend) running on `VITE_API_BASE_URL`
+- [interview-levelup-backend](https://github.com/interview-levelup/interview-levelup-backend) running on `VITE_API_BASE_URL`
 - The backend is connected to [interview-levelup-agent](../interview-levelup-agent) internally — the frontend only talks to the Go API
