@@ -13,6 +13,7 @@ import IconAutoplayOff from '@/assets/icon-autoplay-off.svg?react'
 import IconMic         from '@/assets/icon-mic.svg?react'
 import IconMicStop     from '@/assets/icon-mic-stop.svg?react'
 import IconPause       from '@/assets/icon-pause.svg?react'
+import IconReport      from '@/assets/icon-report.svg?react'
 
 // Formats a timestamp for chat bubbles:
 // - same day  → "14:05"
@@ -356,7 +357,7 @@ export default function InterviewPage() {
           </div>
           {isFinished && current.final_report && (
             <button className={styles.reportBtn} onClick={() => setShowReport(true)}>
-              📋 查看报告
+              <IconReport className={styles.iconSvgSm} /> 查看报告
             </button>
           )}
         </div>

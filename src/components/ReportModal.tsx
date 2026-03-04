@@ -1,6 +1,7 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import styles from './ReportModal.module.scss'
+import IconReport from '@/assets/icon-report.svg?react'
 
 interface Props {
   report: string
@@ -23,7 +24,7 @@ export default function ReportModal({ report, role, onClose }: Props) {
     <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className={styles.modal}>
         <div className={styles.header}>
-          <h2>📋 面试报告</h2>
+          <h2><IconReport style={{ width: '1.3em', height: '1.3em', marginRight: '0.4em', flexShrink: 0 }} /> 面试报告</h2>
           <div className={styles.actions}>
             <button className={styles.downloadBtn} onClick={handleDownload}>
               ⬇ 下载 .md
