@@ -2,14 +2,17 @@ import { useEffect, useState, useRef, useCallback, type FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import { useInterviewStore } from '@/store/interviewStore'
+import { useAuthStore } from '@/store/authStore'
 import ReportModal from '@/components/ReportModal'
 import { useTTS } from '@/hooks/useTTS'
 import { useSTT, type SttMode } from '@/hooks/useSTT'
 import styles from './InterviewPage.module.scss'
-import IconSpeakerOn  from '@/assets/icon-speaker-on.svg?react'
-import IconSpeakerOff from '@/assets/icon-speaker-off.svg?react'
-import IconMic        from '@/assets/icon-mic.svg?react'
-import IconMicStop    from '@/assets/icon-mic-stop.svg?react'
+import IconSpeakerOn    from '@/assets/icon-speaker-on.svg?react'
+import IconAutoplay    from '@/assets/icon-autoplay.svg?react'
+import IconAutoplayOff from '@/assets/icon-autoplay-off.svg?react'
+import IconMic         from '@/assets/icon-mic.svg?react'
+import IconMicStop     from '@/assets/icon-mic-stop.svg?react'
+import IconPause       from '@/assets/icon-pause.svg?react'
 
 // Formats a timestamp for chat bubbles:
 // - same day  → "14:05"
@@ -82,11 +85,14 @@ function EvalBlock({ score, detail }: { score: number | undefined | null; detail
   )
 }
 
+const AUTO_TTS_KEY = (userId: string) => `autoTTS:${userId}`
+
 export default function InterviewPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { current, rounds, loading, fetchInterview, submitAnswer, submitAnswerStream, reset, streamingQuestion, isStreaming } =
     useInterviewStore()
+  const user = useAuthStore((s) => s.user)
   const [answer, setAnswer] = useState('')
   const [pendingAnswer, setPendingAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -94,8 +100,13 @@ export default function InterviewPage() {
   const [showEndConfirm, setShowEndConfirm] = useState(false)
   const [showReport, setShowReport] = useState(false)
   const [sttMode, setSttMode] = useState<SttMode>('webspeech')
-  const [autoTTS, setAutoTTS] = useState(true)
+  const [autoTTS, setAutoTTS] = useState<boolean>(() => {
+    if (!user?.id) return false
+    const raw = localStorage.getItem(AUTO_TTS_KEY(user.id))
+    return raw === null ? false : raw === 'true'
+  })
   const [sttError, setSttError] = useState<string | null>(null)
+  const [speakingBubbleId, setSpeakingBubbleId] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const sidebarRef = useRef<HTMLDivElement>(null)
   const [canScrollDown, setCanScrollDown] = useState(false)
@@ -110,6 +121,16 @@ export default function InterviewPage() {
     (text) => { setSttError(null); setAnswer((prev) => prev + text) },
     (msg) => { console.warn('[STT]', msg); setSttError(msg) },
   )
+
+  // Clear speakingBubbleId when TTS finishes naturally
+  useEffect(() => {
+    if (!speaking) setSpeakingBubbleId(null)
+  }, [speaking])
+
+  // Persist autoTTS preference to localStorage, scoped to the current user
+  useEffect(() => {
+    if (user?.id) localStorage.setItem(AUTO_TTS_KEY(user.id), String(autoTTS))
+  }, [autoTTS, user?.id])
 
   const checkSidebarScroll = useCallback(() => {
     const el = sidebarRef.current
@@ -367,10 +388,23 @@ export default function InterviewPage() {
                   <button
                     type="button"
                     className={styles.speakBtn}
-                    onClick={() => speak(r.question)}
+                    onClick={() => {
+                      if (speakingBubbleId === r.id) {
+                        stopTTS()
+                        setSpeakingBubbleId(null)
+                      } else {
+                        stopTTS()
+                        speak(r.question)
+                        setSpeakingBubbleId(r.id)
+                      }
+                    }}
                     disabled={!voicesReady}
-                    title={voicesReady ? '朗读问题' : '音声加载中...'}
-                  ><IconSpeakerOn className={styles.iconSvgSm} aria-label="朗读" /></button>
+                    title={!voicesReady ? '音声加载中...' : speakingBubbleId === r.id ? '停止朗读' : '朗读问题'}
+                  >
+                    {speakingBubbleId === r.id
+                      ? <IconPause className={styles.iconSvgSm} aria-label="停止" />
+                      : <IconSpeakerOn className={styles.iconSvgSm} aria-label="朗读" />}
+                  </button>
                 </div>
                 <div className={styles.md}><ReactMarkdown>{r.question}</ReactMarkdown></div>
                 <span className={styles.bubbleTime}>{formatBubbleTime(r.created_at)}</span>
@@ -444,15 +478,14 @@ export default function InterviewPage() {
               {/* Voice controls bar */}
               <div className={styles.voiceBar}>
                 <div className={styles.voiceLeft}>
-                  {/* TTS mute toggle */}
+                  {/* Auto-TTS toggle — only controls whether new AI messages auto-play; never interrupts current playback */}
                   <button
                     type="button"
                     className={`${styles.voiceIconBtn} ${autoTTS ? styles.active : ''}`}
-                    onClick={() => { setAutoTTS((v) => !v); if (speaking) stopTTS() }}
-                    disabled={!voicesReady}
-                    title={!voicesReady ? '音声加载中...' : autoTTS ? '关闭自动朗读' : '开启自动朗读'}
+                    onClick={() => setAutoTTS((v) => !v)}
+                    title={autoTTS ? '关闭自动朗读' : '开启自动朗读'}
                   >
-                    {autoTTS ? <IconSpeakerOn className={styles.iconSvg} /> : <IconSpeakerOff className={styles.iconSvg} />}
+                    {autoTTS ? <IconAutoplay className={styles.iconSvg} /> : <IconAutoplayOff className={styles.iconSvg} />}
                   </button>
 
                   {/* Mic button */}
